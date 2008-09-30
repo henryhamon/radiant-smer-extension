@@ -1,0 +1,16 @@
+%h1=_('Remove Snippet')
+
+%p=_('Are you sure you want to <span class=\'warning\'>permanently remove</span> the following %s?') % [_('snippet')]
+
+%table.index#snippets{:cellpadding=>0, :cellspacing=>0, :border=>0}
+  %tbody
+    %tr.node.level-1
+      %td.snippet
+        = image('snippet', :alt => "snippet-icon")
+        %span.title= @snippet.name
+
+- form_tag do
+  %p.buttons
+    %input.button{:type=>"submit", :value=>_("Delete Snippet")}/
+    =_('or')
+    = link_to _('Cancel'), snippet_index_url

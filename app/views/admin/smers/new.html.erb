@@ -1,0 +1,30 @@
+<h1>New eMail Configuration</h1>
+
+<% form_for :smer do |f| %>
+  <%= f.error_messages %>
+
+  <p>
+    <%= f.label :subject %><br />
+    <%= f.text_field :subject %>
+  </p>
+  <p>
+    <%= f.label :from %><br />
+    <%= f.text_field :from %>
+  </p>
+  <p>
+    <%= f.label :redirect %><br />
+    <%= f.text_field :redirect %>
+  </p>
+  <p>
+    <%= f.label :recipients %><br />
+    <%= f.text_area :recipients %>
+  </p>
+  <p>
+    <%= f.label :email_template %><br />
+    <%= f.text_area :email_template %>
+  </p>
+  <p>
+    <%= f.submit "Create" %>
+  </p>
+<% end %>
+

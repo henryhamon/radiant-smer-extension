@@ -1,0 +1,38 @@
+- render_region :main do |main|
+  - main.edit_header do
+    - if @snippet.new_record?
+      %h1=_('New eMail Config')
+    - else
+      %h1=_('Edit eMail Config')
+      
+  - main.edit_form do
+    - form_tag do
+      = hidden_field 'smer', 'lock_version'
+      = render_region :form_top
+      .form-area
+        - render_region :form do |form|
+          - form.edit_subject do
+            %p.subject
+              %label{:for=>"smer_subject"}=_('Subject')
+              = text_field "smer", "subject", :class => 'textbox', :maxlength => 100
+          - form.edit_from do
+            %p.from
+              %label{:for=>"smer_from"}=_('From')
+              = text_field "smer", "from", :class => 'textbox', :maxlength => 50
+          - form.edit_redirect do
+            %p.redirect
+              %label{:for=>"smer_redirect"}=_('Redirect to')
+              = text_field "smer", "redirect", :class => 'textbox', :maxlength => 100
+          - form.edit_recipients do
+            %p.recipients
+              %label{:for=>"smer_recipients"}=_('Recipients')
+              ~ text_area "smer", "recipients", :class => "textarea", :style => "width: 100%"
+          - form.edit_template do
+            %p.template
+              %label{:for=>"smer_template"}=_('Email Template')
+              ~ text_area "smer", "template", :class => "textarea", :style => "width: 100%"         
+      
+- render_region :bottom do |bottom|
+  - bottom.new_button do
+    %p
+      = link_to image('new-smer', :alt => _('New Smer')), smer_new_url
