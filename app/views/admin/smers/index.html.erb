@@ -1,19 +1,28 @@
-<h1>eMails Configurations</h1>
-
-<table>
-  <tr>
-    <th colspan=3>Subject</th>
-  
-  </tr>
-
+<h1>eMail Configuration</h1>
+<p>The “eMail Config” page part is where the email configuration parameters are set.</p>
+<table cellspacing="0" cellpadding="0" border="0" id="smers" class="index">
+  <thead>
+     <tr>
+        <th>Title</th>
+        <th class="modify">Modify</th>
+     </tr>
+  </thead>
+  <tbody>
+    
+            
 <% for smer in @smers %>
-  <tr>
-    <td><%=h smer.subject %></td>
-    <td><%= link_to 'Show', smer %></td>
-    <td><%= link_to 'Edit', edit_smer_path(smer) %></td>
-    <td><%= link_to 'Destroy', smer, :confirm => 'Are you sure?', :method => :delete %></td>
-  </tr>
+
+  <tr class="node level-1">
+    <td class="snippet">
+      <img src="/images/admin/snippet.png" alt="smer-icon"/>
+      <span><%= link_to h(smer.subject), 'smers/edit/'+smer.id.to_s %></span>
+    </td>
+    <td class="remove">
+      <img src="/images/admin/remove.png?1222209194" alt="Remove eMail"/>
+    </td>
+  </tr>  
 <% end %>
+ </tbody>
 </table>
 
 <br />
