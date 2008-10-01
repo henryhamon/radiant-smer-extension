@@ -1,8 +1,11 @@
-<h1>Editing smer</h1>
+<h1>Editing eMail</h1>
 
 <% form_for :smer do |f| %>
   <%= f.error_messages %>
-
+  <p>
+    <%= f.label :title %><br />
+    <%= f.text_field :title %>
+  </p>
   <p>
     <%= f.label :subject %><br />
     <%= f.text_field :subject %>

@@ -1,14 +1,83 @@
-module AsmeTags
+module SmerTags
   include Radiant::Taggable
+  class TagError < StandardError; end 
   
-  def config
-    page = self
-    until page.part(:mailer) or (not page.parent)
-      page = page.parent
-    end
-    string = page.render_part(:mailer)
-    (string.empty? ? {} : YAML::load(string))
+  desc %{
+    Generates a form for submitting email.
+    Usage:
+    <pre><code>  <r:smer:form>...</r:smer:form></code></pre>}
+  tag "smer:form" do |tag|
+    results = [%(<a name="smer"></a>)]
+    results << %(<form action="/pages/#{tag.locals.page.id}/smer#mailer" method="post" >)
+    results <<   tag.expand
+    results << %(</form>)
   end
+  
+  desc %{
+    Renders a <textarea>...</textarea> tag for a mailer form. The 'name' attribute is required. }
+  tag 'smer:textarea' do |tag|
+    raise_error_if_name_missing "smer:textarea", tag.attr
+    result =  [%(<textarea #{mailer_attrs(tag, 'rows' => '5', 'cols' => '35')}>)]
+    result << (prior_value(tag) || tag.expand)
+    result << "</textarea>"
+    add_required(result, tag)
+  end
+  
+  
+  %w(text checkbox radio hidden).each do |type|
+    desc %{
+      Renders a #{type} input tag for a mailer form. The 'name' attribute is required.}
+    tag "mailer:#{type}" do |tag|
+      raise_error_if_name_missing "mailer:#{type}", tag.attr
+      value = (prior_value(tag) || tag.attr['value'])
+      result = [%(<input type="#{type}" value="#{value}" #{mailer_attrs(tag)} />)]
+      add_required(result, tag)
+    end
+  end
+
+  desc %{
+    Renders a @<select>...</select>@ tag for a mailer form.  The 'name' attribute is required.
+    @<r:option />@ tags may be nested inside the tag to automatically generate options.}
+  tag 'mailer:select' do |tag|
+    raise_error_if_name_missing "mailer:select", tag.attr
+    tag.locals.parent_tag_name = tag.attr['name']
+    tag.locals.parent_tag_type = 'select'
+    result = [%Q(<select #{mailer_attrs(tag, 'size' => '1')}>)]
+    result << tag.expand
+    result << "</select>"
+    add_required(result, tag)
+  end
+
+  
+
+  %{
+    Renders a series of @<input type="radio" .../>@ tags for a mailer form.  The 'name' attribute is required.
+    Nested @<r:option />@ tags will generate individual radio buttons with corresponding values. }
+  tag 'mailer:radiogroup' do |tag|
+    raise_error_if_name_missing "mailer:radiogroup", tag.attr
+    tag.locals.parent_tag_name = tag.attr['name']
+    tag.locals.parent_tag_type = 'radiogroup'
+    tag.expand
+  end
+
+  desc %{ Renders an @<option/>@ tag if the parent is a
+    @<r:mailer:select>...</r:mailer:select>@ tag, an @<input type="radio"/>@ tag if
+    the parent is a @<r:mailer:radiogroup>...</r:mailer:radiogroup>@ }
+  tag 'mailer:option' do |tag|
+    tag.attr['name'] = tag.locals.parent_tag_name
+
+    value = (tag.attr['value'] || tag.expand)
+    selected = (prior_value(tag, tag.locals.parent_tag_name) == value)
+
+    if tag.locals.parent_tag_type == 'select'
+      %(<option value="#{value}"#{%( selected="selected") if selected} #{mailer_attrs(tag)}>#{tag.expand}</option>)
+    elsif tag.locals.parent_tag_type == 'radiogroup'
+      %(<input type="radio" value="#{value}"#{%( selected="selected") if selected} #{mailer_attrs(tag)} />)
+    end
+  end
+
+
+#############################################################################
 
   desc %{ All mailer-related tags live inside this one. }
   tag "mailer" do |tag|
@@ -45,17 +114,6 @@ module AsmeTags
     tag.locals.error_message
   end
 
-  desc %{
-    Generates a form for submitting email.
-
-    Usage:
-    <pre><code>  <r:mailer:form>...</r:mailer:form></code></pre>}
-  tag "mailer:form" do |tag|
-    results = [%(<a name="mailer"></a>)]
-    results << %(<form action="/pages/#{tag.locals.page.id}/mail#mailer" method="post" #{mailer_attrs(tag)}">)
-    results <<   tag.expand
-    results << %(</form>)
-  end
   
   desc %{
     Outputs a bit of javascript that will cause the enclosed content
@@ -66,66 +124,6 @@ module AsmeTags
     results << %(</div>)
     results << %(<script type="text/javascript">if($ && location.hash == '#mail_sent'){$('mail_sent').show();}</script>)
     results
-  end
-
-  %w(text checkbox radio hidden).each do |type|
-    desc %{
-      Renders a #{type} input tag for a mailer form. The 'name' attribute is required.}
-    tag "mailer:#{type}" do |tag|
-      raise_error_if_name_missing "mailer:#{type}", tag.attr
-      value = (prior_value(tag) || tag.attr['value'])
-      result = [%(<input type="#{type}" value="#{value}" #{mailer_attrs(tag)} />)]
-      add_required(result, tag)
-    end
-  end
-
-  desc %{
-    Renders a @<select>...</select>@ tag for a mailer form.  The 'name' attribute is required.
-    @<r:option />@ tags may be nested inside the tag to automatically generate options.}
-  tag 'mailer:select' do |tag|
-    raise_error_if_name_missing "mailer:select", tag.attr
-    tag.locals.parent_tag_name = tag.attr['name']
-    tag.locals.parent_tag_type = 'select'
-    result = [%Q(<select #{mailer_attrs(tag, 'size' => '1')}>)]
-    result << tag.expand
-    result << "</select>"
-    add_required(result, tag)
-  end
-
-  desc %{
-    Renders a <textarea>...</textarea> tag for a mailer form. The `name' attribute is required. }
-  tag 'mailer:textarea' do |tag|
-    raise_error_if_name_missing "mailer:textarea", tag.attr
-    result =  [%(<textarea #{mailer_attrs(tag, 'rows' => '5', 'cols' => '35')}>)]
-    result << (prior_value(tag) || tag.expand)
-    result << "</textarea>"
-    add_required(result, tag)
-  end
-
-  %{
-    Renders a series of @<input type="radio" .../>@ tags for a mailer form.  The 'name' attribute is required.
-    Nested @<r:option />@ tags will generate individual radio buttons with corresponding values. }
-  tag 'mailer:radiogroup' do |tag|
-    raise_error_if_name_missing "mailer:radiogroup", tag.attr
-    tag.locals.parent_tag_name = tag.attr['name']
-    tag.locals.parent_tag_type = 'radiogroup'
-    tag.expand
-  end
-
-  desc %{ Renders an @<option/>@ tag if the parent is a
-    @<r:mailer:select>...</r:mailer:select>@ tag, an @<input type="radio"/>@ tag if
-    the parent is a @<r:mailer:radiogroup>...</r:mailer:radiogroup>@ }
-  tag 'mailer:option' do |tag|
-    tag.attr['name'] = tag.locals.parent_tag_name
-
-    value = (tag.attr['value'] || tag.expand)
-    selected = (prior_value(tag, tag.locals.parent_tag_name) == value)
-
-    if tag.locals.parent_tag_type == 'select'
-      %(<option value="#{value}"#{%( selected="selected") if selected} #{mailer_attrs(tag)}>#{tag.expand}</option>)
-    elsif tag.locals.parent_tag_type == 'radiogroup'
-      %(<input type="radio" value="#{value}"#{%( selected="selected") if selected} #{mailer_attrs(tag)} />)
-    end
   end
 
   desc %{

@@ -9,6 +9,8 @@ class SmerExtension < Radiant::Extension
     map.connect 'admin/smers/edit/:id', :controller => 'admin/smers', :action => 'edit'
     map.connect 'admin/smers/new', :controller => 'admin/smers', :action => 'new'
     map.connect 'admin/smers/remove/:id', :controller => 'admin/smers', :action => 'remove'
+    
+    map.resources :smer, :path_prefix => "/pages/:page_id", :controller => "smer"
  
   end
   
