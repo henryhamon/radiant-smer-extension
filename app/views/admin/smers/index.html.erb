@@ -14,11 +14,11 @@
 
   <tr class="node level-1">
     <td class="snippet">
-      <img src="/images/admin/snippet.png" alt="smer-icon"/>
+      <%= image_tag 'admin/snippet.png' %>
       <span><%= link_to h(smer.subject), 'smers/edit/'+smer.id.to_s %></span>
     </td>
     <td class="remove">
-      <img src="/images/admin/remove.png?1222209194" alt="Remove eMail"/>
+      <%= link_to image_tag('admin/remove.png'), 'smers/remove/'+smer.id.to_s %>
     </td>
   </tr>  
 <% end %>
